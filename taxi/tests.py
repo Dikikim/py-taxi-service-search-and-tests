@@ -14,45 +14,34 @@ class SearchTests(TestCase):
         self.client.force_login(self.user)
 
     def test_search_manufacturers_by_name(self):
-        Manufacturer.objects.create(name="Toyota", country="Japan")
-        Manufacturer.objects.create(name="Ford", country="USA")
-
-        response = self.client.get(reverse(
-            "taxi:manufacturer-list") + "?name=Toy"
-        )
+        toyota = Manufacturer.objects.create(name="Toyota", country="Japan")
+        ford = Manufacturer.objects.create(name="Ford", country="USA")
+        url = reverse("taxi:manufacturer-list") + "?name=Toy"
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn(toyota, response.context["manufacturer_list"])
+        self.assertNotIn(ford, response.context["manufacturer_list"])
 
     def test_search_cars_by_model(self):
         manufacturer = Manufacturer.objects.create(
-            name="Honda",
-            country="Japan"
+            name="Honda", country="Japan"
         )
-
-        Car.objects.create(
-            model="Civic",
-            manufacturer=manufacturer
-        )
-        Car.objects.create(
-            model="Accord",
-            manufacturer=manufacturer
-        )
-
-        response = self.client.get(reverse(
-            "taxi:car-list") + "?model=Civ"
-        )
+        civic = Car.objects.create(model="Civic", manufacturer=manufacturer)
+        accord = Car.objects.create(model="Accord", manufacturer=manufacturer)
+        url = reverse("taxi:car-list") + "?model=Civ"
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn(civic, response.context["car_list"])
+        self.assertNotIn(accord, response.context["car_list"])
 
     def test_search_drivers_by_username(self):
-        get_user_model().objects.create_user(
-            username="johndoe",
-            password="123",
-            license_number="XYZ98765"
+        user = get_user_model().objects.create_user(
+            username="johndoe", password="123", license_number="XYZ98765"
         )
-
-        response = self.client.get(reverse(
-            "taxi:driver-list") + "?username=john"
-        )
+        url = reverse("taxi:driver-list") + "?username=john"
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn(user, response.context["driver_list"])
