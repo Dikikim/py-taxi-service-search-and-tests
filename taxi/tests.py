@@ -16,8 +16,9 @@ class SearchTests(TestCase):
     def test_search_manufacturers_by_name(self):
         toyota = Manufacturer.objects.create(name="Toyota", country="Japan")
         ford = Manufacturer.objects.create(name="Ford", country="USA")
-        url = reverse("taxi:manufacturer-list") + "?name=Toy"
-        response = self.client.get(url)
+        response = self.client.get(
+            reverse("taxi:manufacturer-list") + "?name=Toy"
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(toyota, response.context["manufacturer_list"])
@@ -29,19 +30,25 @@ class SearchTests(TestCase):
         )
         civic = Car.objects.create(model="Civic", manufacturer=manufacturer)
         accord = Car.objects.create(model="Accord", manufacturer=manufacturer)
-        url = reverse("taxi:car-list") + "?model=Civ"
-        response = self.client.get(url)
+        response = self.client.get(
+            reverse("taxi:car-list") + "?model=Civ"
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(civic, response.context["car_list"])
         self.assertNotIn(accord, response.context["car_list"])
 
     def test_search_drivers_by_username(self):
-        user = get_user_model().objects.create_user(
+        driver = get_user_model().objects.create_user(
             username="johndoe", password="123", license_number="XYZ98765"
         )
-        url = reverse("taxi:driver-list") + "?username=john"
-        response = self.client.get(url)
+        other = get_user_model().objects.create_user(
+            username="admin", password="123", license_number="QWE12345"
+        )
+        response = self.client.get(
+            reverse("taxi:driver-list") + "?username=john"
+        )
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn(user, response.context["driver_list"])
+        self.assertIn(driver, response.context["driver_list"])
+        self.assertNotIn(other, response.context["driver_list"])
